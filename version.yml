@@ -42,13 +42,13 @@ language: "en" # message language: en | ko
 project_paths: # Project folder per type (path relative to the repo root)
   node: "." # package.json
 metadata:
-  last_updated: "2026-10-16"
+  last_updated: "2026-10-16 10:26:39"
   last_updated_by: "Cassiiopeia"
   default_branch: "main"
   integration_date: "2026-10-16"
   template:
     source: "project-auto-wizard"
-    version: "0.17.0"
+    version: "1.0.0"
     integrated_date: "2026-10-16"
     last_update_date: "2026-10-16"
     branches:
