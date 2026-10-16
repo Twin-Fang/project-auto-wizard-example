@@ -1,7 +1,16 @@
 # Changelog
 
-**Current version:** 0.2.1  
-**Last updated:** 2026-10-16T08:27:29Z  
+**Current version:** 0.2.2  
+**Last updated:** 2026-10-16T10:27:14Z  
+
+---
+
+## [0.2.2] - 2026-10-16
+
+**PR:** #3  
+
+**🔧 Changes**
+- update project-auto-wizard to 1.0.0
 
 ---
 

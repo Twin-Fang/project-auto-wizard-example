@@ -1,13 +1,31 @@
 {
   "metadata": {
-    "lastUpdated": "2026-10-16T08:27:29Z",
-    "currentVersion": "0.2.1",
+    "lastUpdated": "2026-10-16T10:27:14Z",
+    "currentVersion": "0.2.2",
     "projectTypes": [
       "node"
     ],
-    "totalReleases": 2
+    "totalReleases": 3
   },
   "releases": [
+    {
+      "version": "0.2.2",
+      "project_types": [
+        "node"
+      ],
+      "date": "2026-10-16",
+      "pr_number": 3,
+      "raw_summary": "### 🔧 Changes\n- update project-auto-wizard to 1.0.0",
+      "parsed_changes": {
+        "changes": {
+          "title": "🔧 Changes",
+          "items": [
+            "update project-auto-wizard to 1.0.0"
+          ]
+        }
+      },
+      "parse_method": "markdown"
+    },
     {
       "version": "0.2.1",
       "project_types": [
