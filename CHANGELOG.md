@@ -1,7 +1,7 @@
 # Changelog
 
 **Current version:** 0.2.2  
-**Last updated:** 2026-10-16T10:27:14Z  
+**Last updated:** 2026-10-16T10:36:58Z  
 
 ---
 
