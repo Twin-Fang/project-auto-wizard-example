@@ -35,8 +35,8 @@
 # Gradle/Maven -SNAPSHOT is kept when the version is bumped (1.2.0-SNAPSHOT -> 1.2.1-SNAPSHOT).
 # ===
 
-version: "0.2.0"
-version_code: 2 # app build number
+version: "0.2.1"
+version_code: 3 # app build number
 project_types: ["node"] # first entry is primary
 language: "en" # message language: en | ko
 project_paths: # Project folder per type (path relative to the repo root)
