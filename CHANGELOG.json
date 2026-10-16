@@ -1,0 +1,30 @@
+{
+  "metadata": {
+    "lastUpdated": "2026-10-16T08:26:20Z",
+    "currentVersion": "0.2.0",
+    "projectTypes": [
+      "node"
+    ],
+    "totalReleases": 1
+  },
+  "releases": [
+    {
+      "version": "0.2.0",
+      "project_types": [
+        "node"
+      ],
+      "date": "2026-10-16",
+      "pr_number": 1,
+      "raw_summary": "### ✨ Features\n- greet in Korean and Japanese",
+      "parsed_changes": {
+        "feat": {
+          "title": "✨ Features",
+          "items": [
+            "greet in Korean and Japanese"
+          ]
+        }
+      },
+      "parse_method": "markdown"
+    }
+  ]
+}
