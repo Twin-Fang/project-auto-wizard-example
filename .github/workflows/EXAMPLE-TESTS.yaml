@@ -1,0 +1,20 @@
+# Tests for this example project (not installed by project-auto-wizard)
+name: EXAMPLE-TESTS
+
+on:
+  pull_request:
+  push:
+    branches: [develop]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: npm test
