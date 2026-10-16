@@ -1,6 +1,6 @@
 {
-  "templateVersion": "0.17.0",
-  "installedAt": "2026-10-16 08:25:34",
+  "templateVersion": "1.0.0",
+  "installedAt": "2026-10-16 10:26:39",
   "files": {
     "PROJECT-COMMON-AI-PR-SUMMARY.yaml": {
       "installed": "sha256:19f828de5f1c5cb9e3510c42d258fdc5aa398d0164d1f8634f4785b6abc59fb4",
