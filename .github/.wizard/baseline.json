@@ -1,0 +1,34 @@
+{
+  "templateVersion": "0.17.0",
+  "installedAt": "2026-10-16 08:25:34",
+  "files": {
+    "PROJECT-COMMON-AI-PR-SUMMARY.yaml": {
+      "installed": "sha256:19f828de5f1c5cb9e3510c42d258fdc5aa398d0164d1f8634f4785b6abc59fb4",
+      "rendered": "sha256:19f828de5f1c5cb9e3510c42d258fdc5aa398d0164d1f8634f4785b6abc59fb4"
+    },
+    "PROJECT-COMMON-AUTO-CHANGELOG-CONTROL.yaml": {
+      "installed": "sha256:810fd36ba2e5961639101b2fa3d953e55af8f0ff3445aed7e7115cb90babab60",
+      "rendered": "sha256:810fd36ba2e5961639101b2fa3d953e55af8f0ff3445aed7e7115cb90babab60"
+    },
+    "PROJECT-COMMON-ISSUE-HELPER.yaml": {
+      "installed": "sha256:846a177deae41e160eccb21fa66b95a6ccb593286c526832f2662b8e6e00b262",
+      "rendered": "sha256:846a177deae41e160eccb21fa66b95a6ccb593286c526832f2662b8e6e00b262"
+    },
+    "PROJECT-COMMON-README-VERSION-UPDATE.yaml": {
+      "installed": "sha256:185917396ba090bc355065c38666a7aefca1036f9589c8c538a8bdf6a734342f",
+      "rendered": "sha256:185917396ba090bc355065c38666a7aefca1036f9589c8c538a8bdf6a734342f"
+    },
+    "PROJECT-COMMON-RELEASE-PR-MERGED.yaml": {
+      "installed": "sha256:c180fac4b6db54c0b82b759209ba79b2dff08852c48b772e0e6397ee66a99a33",
+      "rendered": "sha256:c180fac4b6db54c0b82b759209ba79b2dff08852c48b772e0e6397ee66a99a33"
+    },
+    "PROJECT-COMMON-RELEASE-PUBLISH.yaml": {
+      "installed": "sha256:963b3e0cc7e2c01ff2edcd6ee8f840fd8337f9215f61c810a4ff545767359a87",
+      "rendered": "sha256:963b3e0cc7e2c01ff2edcd6ee8f840fd8337f9215f61c810a4ff545767359a87"
+    },
+    "PROJECT-COMMON-VERSION-CONTROL.yaml": {
+      "installed": "sha256:3bf8a58bbf3911f0bbb1b4fe04dabf1584e14cfaac481c17ab4b77aa44b33a3a",
+      "rendered": "sha256:3bf8a58bbf3911f0bbb1b4fe04dabf1584e14cfaac481c17ab4b77aa44b33a3a"
+    }
+  }
+}

@@ -1,0 +1,347 @@
+# project-auto-wizard:managed-workflow
+# PROJECT-COMMON-VERSION-CONTROL.yaml
+# Safety-net automatic version bump
+#
+# [Safety net] Only when a direct push (one that did not go through a
+# release PR) lands on main (production), this workflow bumps
+# the patch version, syncs every version file, and adds a CHANGELOG entry
+# built from the commits since the last release tag (these become the
+# release notes RELEASE-PUBLISH publishes).
+#
+# Normal releases (develop -> main PR) get their
+# version confirmed by AUTO-CHANGELOG-CONTROL before the merge. The merge
+# commit carries the release-confirm pattern "chore(release):" and the
+# push includes a version.yml change, so this workflow skips via its guard.
+#
+# In trunk-based mode (metadata.template.branches.mode: trunk-based)
+# RELEASE-PUBLISH owns version bumping, so this safety net is skipped
+# entirely to avoid double increments.
+#
+# Release-confirm pattern: "chore(release):" — keep in sync with
+# PROJECT-COMMON-AUTO-CHANGELOG-CONTROL and PROJECT-COMMON-RELEASE-PUBLISH.
+#
+# After pushing the safety-net bump, this workflow also triggers
+# RELEASE-PUBLISH via workflow_dispatch so a version drift is
+# auto-recovered instead of requiring a manual re-run, and merges
+# main back into develop so the next release PR does
+# not conflict on the version files.
+
+name: PROJECT-VERSION-CONTROL
+
+# Prevent concurrent version bumps
+concurrency:
+  group: version-increment
+  cancel-in-progress: false
+
+on:
+  push:
+    branches: ["main"]
+    paths-ignore:
+      - 'CHANGELOG.md'
+      - 'CHANGELOG.json'
+      - 'version.yml'  # prevent infinite loop
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+env:
+  # Keep script imports from creating .github/scripts/__pycache__ so it never ends up in bot commits
+  PYTHONDONTWRITEBYTECODE: "1"
+
+jobs:
+  version-bump:
+    name: Safety-net version bump
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+          ref: "main"
+
+      - name: Release merge / mode guard
+        id: release_guard
+        run: |
+          [ -f "$GITHUB_WORKSPACE/.github/scripts/messages.py" ] || { echo "::error::messages.py is missing; rerun \`npx project-auto-wizard --mode full --force\`"; exit 1; }
+          m() { python3 "$GITHUB_WORKSPACE/.github/scripts/messages.py" get "$@"; }
+          SKIP="false"
+
+          # trunk-based mode: RELEASE-PUBLISH owns versioning — skip safety net
+          MODE=$(python3 -c 'import re; t=open("version.yml",encoding="utf-8").read(); m=re.search(r"^\s*mode:\s*\"?([A-Za-z-]+)", t, re.M); print(m.group(1) if m else "pr-flow")' 2>/dev/null || echo "pr-flow")
+          if [ "$MODE" = "trunk-based" ]; then
+            SKIP="true"
+            echo "$(m wf_version.trunk_skip)"
+          fi
+
+          # release-confirm pattern: the merge commit of a release PR
+          HEAD_MSG=$(git log -1 --pretty=%B)
+          if echo "$HEAD_MSG" | grep -q "chore(release):"; then
+            SKIP="true"
+            echo "$(m wf_version.confirm_skip)"
+          fi
+
+          # first commit of a repository (a "Use this template" copy, a new repo's first push): no direct fix to bump (#429)
+          if ! git rev-parse -q --verify "HEAD^" >/dev/null; then
+            SKIP="true"
+            echo "$(m wf_version.initial_commit_skip)"
+          fi
+
+          # release merge detection: the release push includes a version.yml change
+          BEFORE="${{ github.event.before }}"
+          if [ "$BEFORE" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$BEFORE" 2>/dev/null; then
+            RANGE="HEAD^..HEAD"
+          else
+            RANGE="$BEFORE..HEAD"
+          fi
+          if git diff --name-only $RANGE 2>/dev/null | grep -qx "version.yml"; then
+            SKIP="true"
+            echo "$(m wf_version.release_merge_skip)"
+          fi
+
+          echo "skip=$SKIP" >> $GITHUB_OUTPUT
+          if [ "$SKIP" = "false" ]; then
+            echo "$(m wf_version.direct_push main_branch="main")"
+          fi
+
+      - name: Read current version
+        id: current_version
+        if: steps.release_guard.outputs.skip != 'true'
+        run: |
+          [ -f "$GITHUB_WORKSPACE/.github/scripts/messages.py" ] || { echo "::error::messages.py is missing; rerun \`npx project-auto-wizard --mode full --force\`"; exit 1; }
+          m() { python3 "$GITHUB_WORKSPACE/.github/scripts/messages.py" get "$@"; }
+          CURRENT_VERSION=$(python3 .github/scripts/version_manager.py get | tail -n 1)
+          if [ -z "$CURRENT_VERSION" ]; then
+            echo "$(m wf_version.read_current_failed)"
+            exit 1
+          fi
+          echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "$(m wf_version.current_version current_version="$CURRENT_VERSION")"
+
+      - name: Bump patch version and sync
+        id: version
+        if: steps.release_guard.outputs.skip != 'true'
+        run: |
+          [ -f "$GITHUB_WORKSPACE/.github/scripts/messages.py" ] || { echo "::error::messages.py is missing; rerun \`npx project-auto-wizard --mode full --force\`"; exit 1; }
+          m() { python3 "$GITHUB_WORKSPACE/.github/scripts/messages.py" get "$@"; }
+          NEW_VERSION=$(python3 .github/scripts/version_manager.py increment | tail -n 1)
+          if [ -z "$NEW_VERSION" ]; then
+            echo "$(m wf_common.version_bump_failed)"
+            exit 1
+          fi
+          python3 .github/scripts/version_manager.py sync
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "$(m wf_version.new_version new_version="$NEW_VERSION")"
+
+      - name: Read project types
+        id: project_info
+        if: steps.release_guard.outputs.skip != 'true'
+        run: |
+          [ -f "$GITHUB_WORKSPACE/.github/scripts/messages.py" ] || { echo "::error::messages.py is missing; rerun \`npx project-auto-wizard --mode full --force\`"; exit 1; }
+          m() { python3 "$GITHUB_WORKSPACE/.github/scripts/messages.py" get "$@"; }
+          if [ -f "version.yml" ]; then
+            PROJECT_TYPES=$(grep "^project_types:" version.yml 2>/dev/null | sed -E 's/.*\[([^]]*)\].*/\1/' | tr -d '" ')
+            PROJECT_TYPES=${PROJECT_TYPES:-unknown}
+            echo "project_types=$PROJECT_TYPES" >> $GITHUB_OUTPUT
+            echo "$(m wf_version.project_types project_types="$PROJECT_TYPES")"
+          else
+            echo "project_types=unknown" >> $GITHUB_OUTPUT
+            echo "$(m wf_version.yml_not_found)"
+          fi
+
+      - name: Update CHANGELOG for the safety-net release
+        # Build the CHANGELOG entry from the commits that actually landed, even for a
+        # safety-net release. Without an entry RELEASE-PUBLISH fills the notes with fixed
+        # text and the change history is recorded nowhere.
+        # Summary engine: user API (if configured) -> rule-based (Copilot is used only on
+        # the release-PR and trunk paths)
+        if: steps.release_guard.outputs.skip != 'true'
+        env:
+          AI_API_KEY: ${{ secrets.AI_API_KEY }}
+          AI_API_BASE_URL: ${{ vars.AI_API_BASE_URL }}
+          AI_MODEL: ${{ vars.AI_MODEL }}
+        run: |
+          [ -f "$GITHUB_WORKSPACE/.github/scripts/messages.py" ] || { echo "::error::messages.py is missing; rerun \`npx project-auto-wizard --mode full --force\`"; exit 1; }
+          m() { python3 "$GITHUB_WORKSPACE/.github/scripts/messages.py" get "$@"; }
+          NEW_VERSION="${{ steps.version.outputs.new_version }}"
+
+          # Commits pushed straight to main since the last release tag (full history if there is no tag)
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          LOG_RANGE="${LAST_TAG:+${LAST_TAG}..}HEAD"
+          git log --pretty=%s "$LOG_RANGE" > commits.txt
+          # Body-footer BREAKING CHANGE: lines are appended after the subject list, one per
+          # line. The script reads each line as one entry, so passing the whole body (%B)
+          # would turn description lines into change entries.
+          git log --pretty=%b "$LOG_RANGE" | grep -E '^BREAKING[ -]CHANGE[[:space:]]*:' >> commits.txt || true
+          echo "$(m wf_version.commits_since last_tag="${LAST_TAG:-the beginning}" n="$(wc -l < commits.txt)")"
+
+          python3 .github/scripts/changelog_manager.py ai-summary \
+            --commits-file commits.txt \
+            --version "$NEW_VERSION" \
+            --output summary.md
+
+          # update-from-summary reads ./pr_body.md
+          cp summary.md pr_body.md
+          VERSION="$NEW_VERSION"
+          PROJECT_TYPES="${{ steps.project_info.outputs.project_types }}"
+          TODAY=$(date '+%Y-%m-%d')
+          TIMESTAMP=$(date '+%Y-%m-%dT%H:%M:%SZ')
+          export VERSION PROJECT_TYPES TODAY TIMESTAMP
+          python3 .github/scripts/changelog_manager.py update-from-summary
+          python3 .github/scripts/changelog_manager.py generate-md
+
+          rm -f commits.txt summary.md pr_body.md
+
+      - name: Commit and push changes
+        id: commit_push
+        if: steps.release_guard.outputs.skip != 'true'
+        run: |
+          [ -f "$GITHUB_WORKSPACE/.github/scripts/messages.py" ] || { echo "::error::messages.py is missing; rerun \`npx project-auto-wizard --mode full --force\`"; exit 1; }
+          m() { python3 "$GITHUB_WORKSPACE/.github/scripts/messages.py" get "$@"; }
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+          # -A would also commit runner temp files and caches into the user's repo.
+          # Version files are already tracked, so -u is enough; only a newly created
+          # CHANGELOG is added separately (skipped if it is in .gitignore).
+          git add -u
+          git ls-files -z --others --exclude-standard -- CHANGELOG.json CHANGELOG.md | xargs -0 -r git add --
+
+          if git diff --staged --quiet; then
+            echo "$(m wf_version.no_changes_synced)"
+            echo "pushed=false" >> "$GITHUB_OUTPUT"
+          else
+            NEW_VERSION="${{ steps.version.outputs.new_version }}"
+            COMMIT_MSG="chore(version): bump to v${NEW_VERSION} [skip ci]"
+
+            if git commit -m "$COMMIT_MSG"; then
+              # >>> push-with-retry
+              # Race-condition guard: fetch -> rebase -> push, retried. A concurrent
+              # README-only commit (date refresh) touches the same version line and
+              # conflicts on rebase; the remote README is kept and this run's version
+              # line is reapplied, so a README conflict never blocks the release.
+              PUSH_ERR="${RUNNER_TEMP:-/tmp}/push_err.txt"
+              MAX_RETRIES=5
+              RETRY_COUNT=0
+              PUSH_SUCCESS=false
+
+              while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+                RETRY_COUNT=$((RETRY_COUNT + 1))
+                echo "$(m wf_common.push_attempt retry_count="$RETRY_COUNT" max_retries="$MAX_RETRIES")"
+
+                if git push origin HEAD:main 2> "$PUSH_ERR"; then
+                  cat "$PUSH_ERR" >&2
+                  PUSH_SUCCESS=true
+                  echo "$(m wf_version.bump_pushed)"
+                  break
+                fi
+
+                cat "$PUSH_ERR" >&2
+                # A branch-protection rejection is a standing rule, not a race: retrying cannot succeed
+                if grep -qiE "GH006|GH013|protected branch|repository rule violations" "$PUSH_ERR"; then
+                  echo "::error::$(m wf_common.push_protected branch="main")"
+                  exit 1
+                fi
+
+                echo "$(m wf_common.push_failed_syncing)"
+                git fetch origin main
+                if git rebase origin/main; then
+                  echo "$(m wf_common.rebase_ok)"
+                  continue
+                fi
+
+                # Only README.md conflicting: "ours" is the remote side during a rebase
+                if [ "$(git diff --name-only --diff-filter=U)" = "README.md" ]; then
+                  git checkout --ours -- README.md
+                  python3 -c 'import sys; sys.path.insert(0, ".github/scripts"); import version_manager as vm; vm.update_readme_version(vm.get_current_version())' || true
+                  git add README.md
+                  if GIT_EDITOR=true git rebase --continue; then
+                    echo "$(m wf_common.readme_conflict_resolved)"
+                    continue
+                  fi
+                fi
+
+                echo "$(m wf_common.rebase_failed)"
+                git rebase --abort 2>/dev/null || true
+                exit 1
+              done
+
+              if [ "$PUSH_SUCCESS" = false ]; then
+                echo "$(m wf_common.push_gave_up max_retries="$MAX_RETRIES")"
+                exit 1
+              fi
+              # <<< push-with-retry
+              echo "pushed=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "$(m wf_version.commit_failed)"
+              exit 1
+            fi
+          fi
+
+      - name: Trigger RELEASE-PUBLISH (publish the safety-net bump)
+        if: steps.release_guard.outputs.skip != 'true' && steps.commit_push.outputs.pushed == 'true'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          [ -f "$GITHUB_WORKSPACE/.github/scripts/messages.py" ] || { echo "::error::messages.py is missing; rerun \`npx project-auto-wizard --mode full --force\`"; exit 1; }
+          m() { python3 "$GITHUB_WORKSPACE/.github/scripts/messages.py" get "$@"; }
+          gh workflow run PROJECT-COMMON-RELEASE-PUBLISH.yaml --ref main
+          echo "$(m wf_version.release_publish_triggered)"
+
+      - name: Back-merge the safety-net bump into develop
+        # The safety-net bump lands only on main. If develop does not know
+        # about it, both sides edit the same version line and conflict in the next release
+        # PR, so merge it into develop right away.
+        # On failure (conflict, branch protection) the safety-net release is already done,
+        # so only a warning is left.
+        if: steps.release_guard.outputs.skip != 'true' && steps.commit_push.outputs.pushed == 'true'
+        run: |
+          [ -f "$GITHUB_WORKSPACE/.github/scripts/messages.py" ] || { echo "::error::messages.py is missing; rerun \`npx project-auto-wizard --mode full --force\`"; exit 1; }
+          m() { python3 "$GITHUB_WORKSPACE/.github/scripts/messages.py" get "$@"; }
+          DEVELOP_BRANCH="develop"
+          NEW_VERSION="${{ steps.version.outputs.new_version }}"
+          MANUAL="git checkout $DEVELOP_BRANCH && git pull && git merge origin/main && git push"
+
+          if ! git ls-remote --exit-code --heads origin "$DEVELOP_BRANCH" >/dev/null 2>&1; then
+            echo "$(m wf_version.no_develop develop_branch="$DEVELOP_BRANCH")"
+            exit 0
+          fi
+
+          for ATTEMPT in 1 2 3; do
+            git fetch -q origin "$DEVELOP_BRANCH" main
+            git checkout -q -B safety-net-back-merge "origin/$DEVELOP_BRANCH"
+            if git merge-base --is-ancestor "origin/main" HEAD; then
+              echo "$(m wf_version.already_contains develop_branch="$DEVELOP_BRANCH" main_branch="main")"
+              exit 0
+            fi
+            # No [skip ci]: as the head of develop it would make GitHub skip the release PR's workflows (#426)
+            if ! git merge --no-edit -m "chore(version): merge v${NEW_VERSION} safety-net bump into ${DEVELOP_BRANCH}" "origin/main"; then
+              git merge --abort 2>/dev/null || true
+              echo "::warning::$(m wf_version.backmerge_conflict prod="main" dev="$DEVELOP_BRANCH" manual="$MANUAL")"
+              exit 0
+            fi
+            if git push origin "HEAD:$DEVELOP_BRANCH"; then
+              echo "$(m wf_version.backmerged new_version="$NEW_VERSION" develop_branch="$DEVELOP_BRANCH")"
+              exit 0
+            fi
+            echo "$(m wf_version.push_retry attempt="$ATTEMPT")"
+            sleep 5
+          done
+          echo "::warning::$(m wf_version.backmerge_push_failed dev="$DEVELOP_BRANCH" manual="$MANUAL")"
+
+      - name: Summary
+        if: always()
+        env:
+          PAW_REF_NAME: ${{ github.ref_name }}
+        run: |
+          [ -f "$GITHUB_WORKSPACE/.github/scripts/messages.py" ] || { echo "::error::messages.py is missing; rerun \`npx project-auto-wizard --mode full --force\`"; exit 1; }
+          m() { python3 "$GITHUB_WORKSPACE/.github/scripts/messages.py" get "$@"; }
+          echo "$(m wf_version.finished)"
+          echo "$(m wf_version.sum_skipped skip="${{ steps.release_guard.outputs.skip }}")"
+          echo "$(m wf_version.sum_previous current_version="${{ steps.current_version.outputs.current_version }}")"
+          echo "$(m wf_version.sum_new new_version="${{ steps.version.outputs.new_version }}")"
+          echo "$(m wf_version.sum_branch ref_name="$PAW_REF_NAME")"

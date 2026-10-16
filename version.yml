@@ -1,0 +1,61 @@
+# ===
+# Version format: x.y.z (semantic versioning)
+# - patch: auto-incremented by the release workflows
+# - version_code: monotonically increasing build number, bumped alongside version
+# - major/minor: auto-bumped when metadata.template.options.semver_auto is true
+#   (default) — feat: commits bump minor, a `!` breaking marker on any commit
+#   type bumps major. Set semver_auto: false to always patch-bump instead
+#   (then edit major/minor manually, e.g., 1.0.5 -> 1.1.0 or 2.0.0).
+# - copilot_ai: opt-in (default false) — true lets the release/PR summary
+#   workflows call GitHub Copilot CLI, which consumes GitHub Copilot AI Credits.
+#   Falls back to rule-based summaries whenever Copilot is off or unavailable.
+# - release_automerge: default true — false stops the release PR (develop -> main)
+#   from being merged automatically. Merge it yourself; every merge method
+#   publishes the release, and a merge commit (recommended) keeps squashed or
+#   rebased changes from being listed again in the next release notes.
+# ===
+# Supported project types: spring, flutter, react, react-native,
+#                          react-native-expo, node, python, basic, go
+# Multi-type projects: list every type in the project_types array
+#   -> the first entry is the primary type (project_types is the single source of truth)
+# Monorepo paths: project_paths maps each type to its subdir relative to the repo root
+#   (e.g., flutter: "app", react: "client"). Omitted -> repo root.
+#
+# Synced files per type:
+# - spring: build.gradle / build.gradle.kts / pom.xml
+# - flutter: pubspec.yaml
+# - react/node: package.json
+# - react-native: Info.plist + build.gradle
+# - react-native-expo: app.json
+# - python: pyproject.toml / setup.py
+# - go: (none — git tag based, go.mod has no version field)
+# - basic: version.yml only
+# A file version like 1.2.0-rc.1 or 1.2.0+4 is read as 1.2.0 (version below is x.y.z only).
+# Synced files are rewritten to x.y.z as well, so even `get` turns 2.0.0-beta.1 in package.json into 2.0.0.
+# Gradle/Maven -SNAPSHOT is kept when the version is bumped (1.2.0-SNAPSHOT -> 1.2.1-SNAPSHOT).
+# ===
+
+version: "0.1.0"
+version_code: 1 # app build number
+project_types: ["node"] # first entry is primary
+language: "en" # message language: en | ko
+project_paths: # Project folder per type (path relative to the repo root)
+  node: "." # package.json
+metadata:
+  last_updated: "2026-10-16 08:25:34"
+  last_updated_by: "project-auto-wizard"
+  default_branch: "main"
+  integration_date: "2026-10-16"
+  template:
+    source: "project-auto-wizard"
+    version: "0.17.0"
+    integrated_date: "2026-10-16"
+    last_update_date: "2026-10-16"
+    branches:
+      main: "main"
+      develop: "develop"
+      mode: "pr-flow" # pr-flow | trunk-based
+    options:
+      semver_auto: true
+      copilot_ai: false
+      release_automerge: true
