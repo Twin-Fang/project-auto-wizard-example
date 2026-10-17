@@ -41,6 +41,6 @@ Added for the try-out only (not installed by the wizard): `.devcontainer/`, `scr
 ---
 
 <!-- AUTO-VERSION-SECTION: DO NOT EDIT MANUALLY -->
-## Latest Version : v0.3.0 (2026-10-17)
+## Latest Version : v0.3.1 (2026-10-17)
 
 [View full version history](CHANGELOG.md)
