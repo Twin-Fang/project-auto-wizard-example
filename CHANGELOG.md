@@ -1,7 +1,16 @@
 # Changelog
 
-**Current version:** 0.2.2  
-**Last updated:** 2026-10-16T10:36:58Z  
+**Current version:** 0.3.0  
+**Last updated:** 2026-10-17T15:00:52Z  
+
+---
+
+## [0.3.0] - 2026-10-17
+
+**PR:** #4  
+
+**✨ Features**
+- try it in GitHub Codespaces with guided install and release scripts
 
 ---
 
