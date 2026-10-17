@@ -1,0 +1,21 @@
+// GitHub Codespaces setup for trying project-auto-wizard (see TRY-IT.md)
+{
+  "name": "project-auto-wizard example",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:22-bookworm",
+  "features": {
+    // gh opens the release PR in npm run try:release; Codespaces signs it in automatically
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  // Every new bash terminal starts with the short welcome
+  "postCreateCommand": "echo 'node ${containerWorkspaceFolder}/scripts/try/welcome.mjs' >> ~/.bashrc",
+  "customizations": {
+    "codespaces": {
+      "openFiles": ["TRY-IT.md"]
+    },
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  }
+}

@@ -10,15 +10,19 @@ The history of this repository is real, produced by the installed GitHub Actions
 - [Actions](https://github.com/Twin-Fang/project-auto-wizard-example/actions): the runs behind every release
 - [Releases](https://github.com/Twin-Fang/project-auto-wizard-example/releases) and [CHANGELOG.md](CHANGELOG.md): tags and notes written from the commit messages
 
-## Try it yourself (5 minutes, browser only)
+## Try it yourself, inside GitHub
 
-1. Click **Use this template** > **Create a new repository**. Leave **Include all branches** off.
-2. In your copy, open the branch menu, type `develop`, and choose **Create branch develop from main**.
-3. On `develop`, edit `src/greet.js` and commit with a message starting with `feat:`.
-4. Open a pull request from `develop` to `main`.
-5. Within a minute the bot confirms the version, posts the release notes and merges. Check **Releases**.
+Everything runs on GitHub: no install on your computer, no secrets. Each step is explained as it runs, in English or Korean.
 
-The full guide, with what to check after each step: [Try it in your browser](https://twin-fang.github.io/project-auto-wizard/start/try-it/).
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/Twin-Fang/project-auto-wizard-example?quickstart=1)
+
+**1. Run the installer (2 minutes).** Click the button above. A Codespace (VS Code and a terminal in your browser) opens with [TRY-IT.md](TRY-IT.md). In the terminal run `npm run try:install`: the real wizard installs release automation into a sample Node, Spring or Python project.
+
+**2. Cut a real release (5 minutes).** [Copy this template](https://github.com/new?template_name=project-auto-wizard-example&template_owner=Twin-Fang) to your account, then in your copy click **Code > Codespaces > Create codespace on main** and run `npm run try:release`. It creates `develop`, lets you pick `feat:`, `fix:` or `feat!:`, opens the release PR and waits until GitHub Actions has merged it and published the Release.
+
+A Codespace uses the free monthly quota of your own GitHub account. Delete it at [github.com/codespaces](https://github.com/codespaces) when you are done.
+
+Prefer clicking only? The same release works from GitHub's web UI: [Try it in your browser](https://twin-fang.github.io/project-auto-wizard/start/try-it/).
 
 ## What was installed
 
@@ -32,9 +36,11 @@ npx project-auto-wizard --mode full --force --type node
 | `.github/scripts/*.py` | The logic behind the workflows |
 | `version.yml` | Single source of the version, branches and options |
 
+Added for the try-out only (not installed by the wizard): `.devcontainer/`, `scripts/try/`, `TRY-IT.md`, `test/try-release-plan.test.js` and `.github/workflows/EXAMPLE-TESTS.yaml`.
+
 ---
 
 <!-- AUTO-VERSION-SECTION: DO NOT EDIT MANUALLY -->
-## Latest Version : v0.2.2 (2026-10-16)
+## Latest Version : v0.3.0 (2026-10-17)
 
 [View full version history](CHANGELOG.md)

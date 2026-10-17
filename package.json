@@ -1,9 +1,11 @@
 {
   "name": "project-auto-wizard-example",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test"
+    "test": "node --test",
+    "try:install": "node scripts/try/try-install.mjs",
+    "try:release": "node scripts/try/try-release.mjs"
   }
 }
