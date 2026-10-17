@@ -6,21 +6,34 @@ export const TEMPLATE_REPOSITORY = "Twin-Fang/project-auto-wizard-example";
 export const COPY_TEMPLATE_URL = "https://github.com/new?template_name=project-auto-wizard-example&template_owner=Twin-Fang";
 export const GUIDE_URL = "https://twin-fang.github.io/project-auto-wizard/start/try-it/";
 
+// How to get an own copy, shown when the release cannot run here
+const COPY_STEPS = {
+  en: [
+    "To see a real release, copy the template to your account first:",
+    `  1. Open ${COPY_TEMPLATE_URL}`,
+    "  2. Pick your account, any name, Public, then Create repository.",
+    "  3. In your new repository: Code > Codespaces > Create codespace on main.",
+    "  4. Run npm run try:release there.",
+    "Meanwhile you can try the installer right here: npm run try:install",
+  ],
+  ko: [
+    "실제 릴리스를 보려면 먼저 템플릿을 내 계정으로 복사하세요.",
+    `  1. ${COPY_TEMPLATE_URL} 을 엽니다.`,
+    "  2. 내 계정, 아무 이름, Public을 고르고 Create repository를 누릅니다.",
+    "  3. 새 레포에서 Code > Codespaces > Create codespace on main을 누릅니다.",
+    "  4. 거기서 npm run try:release를 실행합니다.",
+    "그동안 여기서는 설치 마법사를 체험할 수 있습니다: npm run try:install",
+  ],
+};
+
 const MESSAGES = {
   en: {
     stepCount: 5,
     checkTitle: "Check the repository",
     checkExplain: ["The release runs in GitHub Actions of the repository this Codespace belongs to.", "That must be your own copy, so the bot can push and merge there."],
     checkOk: (repository) => `You can write to ${repository}.`,
-    notCopied: (repository) => [
-      `This Codespace belongs to ${repository}, which you cannot change.`,
-      "To see a real release, copy the template to your account first:",
-      `  1. Open ${COPY_TEMPLATE_URL}`,
-      "  2. Pick your account, any name, Public, then Create repository.",
-      "  3. In your new repository: Code > Codespaces > Create codespace on main.",
-      "  4. Run npm run try:release there.",
-      "Meanwhile you can try the installer right here: npm run try:install",
-    ],
+    notCopied: (repository) => [`This Codespace belongs to ${repository}, which you cannot change.`, ...COPY_STEPS.en],
+    templateCodespace: ["This Codespace was opened from the template, so it has no repository of its own yet.", ...COPY_STEPS.en],
     ghMissing: ["The gh command is not available or not signed in.", "Open this repository in GitHub Codespaces, where gh is ready to use."],
     dirtyTree: ["You have uncommitted changes in this folder.", "Commit or discard them first (Source Control panel on the left), then run again."],
     branchTitle: "Prepare the develop branch",
@@ -93,15 +106,8 @@ const MESSAGES = {
     checkTitle: "레포 확인",
     checkExplain: ["릴리스는 이 Codespace가 속한 레포의 GitHub Actions에서 일어납니다.", "봇이 push하고 머지할 수 있도록 내 계정의 복사본이어야 합니다."],
     checkOk: (repository) => `${repository}에 쓸 수 있습니다.`,
-    notCopied: (repository) => [
-      `이 Codespace는 ${repository} 레포에 속해 있고, 이 레포는 바꿀 수 없습니다.`,
-      "실제 릴리스를 보려면 먼저 템플릿을 내 계정으로 복사하세요.",
-      `  1. ${COPY_TEMPLATE_URL} 을 엽니다.`,
-      "  2. 내 계정, 아무 이름, Public을 고르고 Create repository를 누릅니다.",
-      "  3. 새 레포에서 Code > Codespaces > Create codespace on main을 누릅니다.",
-      "  4. 거기서 npm run try:release를 실행합니다.",
-      "그동안 여기서는 설치 마법사를 체험할 수 있습니다: npm run try:install",
-    ],
+    notCopied: (repository) => [`이 Codespace는 ${repository} 레포에 속해 있고, 이 레포는 바꿀 수 없습니다.`, ...COPY_STEPS.ko],
+    templateCodespace: ["이 Codespace는 템플릿에서 바로 연 것이라 아직 내 레포가 없습니다.", ...COPY_STEPS.ko],
     ghMissing: ["gh 명령이 없거나 로그인되어 있지 않습니다.", "gh가 준비되어 있는 GitHub Codespaces에서 이 레포를 열어 주세요."],
     dirtyTree: ["이 폴더에 커밋하지 않은 변경이 있습니다.", "왼쪽 Source Control에서 커밋하거나 되돌린 뒤 다시 실행하세요."],
     branchTitle: "develop 브랜치 준비",
