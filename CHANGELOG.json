@@ -1,13 +1,31 @@
 {
   "metadata": {
-    "lastUpdated": "2026-10-17T15:00:52Z",
-    "currentVersion": "0.3.0",
+    "lastUpdated": "2026-10-17T15:09:50Z",
+    "currentVersion": "0.3.1",
     "projectTypes": [
       "node"
     ],
-    "totalReleases": 4
+    "totalReleases": 5
   },
   "releases": [
+    {
+      "version": "0.3.1",
+      "project_types": [
+        "node"
+      ],
+      "date": "2026-10-17",
+      "pr_number": 5,
+      "raw_summary": "### 🐛 Fixes\n- guide Codespaces opened from the template to copy it first",
+      "parsed_changes": {
+        "fix": {
+          "title": "🐛 Fixes",
+          "items": [
+            "guide Codespaces opened from the template to copy it first"
+          ]
+        }
+      },
+      "parse_method": "markdown"
+    },
     {
       "version": "0.3.0",
       "project_types": [

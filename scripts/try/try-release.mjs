@@ -32,6 +32,11 @@ function runOrStop(command, commandArguments) {
 // Own copy with write access and a clean working tree (template itself > copy guide)
 function checkRepository() {
   printStep(1, text.stepCount, text.checkTitle, text.checkExplain);
+  // Codespaces opened from a template (the README button) start without a remote
+  if (!runCommand("git", ["remote", "get-url", "origin"]).isOk) {
+    printStop(text.templateCodespace);
+    process.exit(0);
+  }
   const view = runCommand("gh", ["repo", "view", "--json", "nameWithOwner,viewerPermission,url"]);
   if (!view.isOk) {
     printStop(text.ghMissing);
