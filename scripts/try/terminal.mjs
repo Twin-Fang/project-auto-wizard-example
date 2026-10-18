@@ -58,11 +58,11 @@ export async function waitForEnter(prompt) {
 
 // Runs a command and captures its output (isOk false on a non-zero exit or a missing command)
 export function runCommand(command, commandArguments, { cwd, input } = {}) {
-  const result = spawnSync(command, commandArguments, { cwd, input, encoding: "utf8" });
+  const spawnResult = spawnSync(command, commandArguments, { cwd, input, encoding: "utf8" });
   return {
-    isOk: result.status === 0,
-    stdout: (result.stdout ?? "").trim(),
-    stderr: (result.stderr ?? result.error?.message ?? "").trim(),
+    isOk: spawnResult.status === 0,
+    stdout: (spawnResult.stdout ?? "").trim(),
+    stderr: (spawnResult.stderr ?? spawnResult.error?.message ?? "").trim(),
   };
 }
 

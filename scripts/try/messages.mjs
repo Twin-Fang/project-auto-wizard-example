@@ -36,6 +36,7 @@ const MESSAGES = {
     templateCodespace: ["This Codespace was opened from the template, so it has no repository of its own yet.", ...COPY_STEPS.en],
     ghMissing: ["The gh command is not available or not signed in.", "Open this repository in GitHub Codespaces, where gh is ready to use."],
     dirtyTree: ["You have uncommitted changes in this folder.", "Commit or discard them first (Source Control panel on the left), then run again."],
+    versionUnreadable: ["Could not read the version from version.yml on main.", "Keep version: \"x.y.z\" in version.yml (this example repo ships it), then run again."],
     branchTitle: "Prepare the develop branch",
     branchExplain: ["Work goes to develop. A pull request from develop to main is a release.", "This is the pr-flow branch strategy chosen at install time."],
     branchCreated: "Created develop from main and pushed it.",
@@ -110,6 +111,7 @@ const MESSAGES = {
     templateCodespace: ["이 Codespace는 템플릿에서 바로 연 것이라 아직 내 레포가 없습니다.", ...COPY_STEPS.ko],
     ghMissing: ["gh 명령이 없거나 로그인되어 있지 않습니다.", "gh가 준비되어 있는 GitHub Codespaces에서 이 레포를 열어 주세요."],
     dirtyTree: ["이 폴더에 커밋하지 않은 변경이 있습니다.", "왼쪽 Source Control에서 커밋하거나 되돌린 뒤 다시 실행하세요."],
+    versionUnreadable: ["main의 version.yml에서 버전을 읽지 못했습니다.", "version.yml에 version: \"x.y.z\" 줄이 있어야 합니다(이 예제 레포에는 들어 있습니다). 확인한 뒤 다시 실행하세요."],
     branchTitle: "develop 브랜치 준비",
     branchExplain: ["작업은 develop에 올립니다. develop에서 main으로 가는 PR이 곧 릴리스입니다.", "설치할 때 고른 pr-flow 브랜치 전략입니다."],
     branchCreated: "main에서 develop을 만들어 push했습니다.",
@@ -181,8 +183,8 @@ const MESSAGES = {
 export async function chooseMessages(commandArguments) {
   const languageIndex = commandArguments.indexOf("--lang");
   const requestedLanguage = languageIndex >= 0 ? commandArguments[languageIndex + 1] : process.env.TRY_LANG;
-  if (requestedLanguage in MESSAGES) return { language: requestedLanguage, text: MESSAGES[requestedLanguage] };
+  if (requestedLanguage in MESSAGES) return { language: requestedLanguage, messages: MESSAGES[requestedLanguage] };
   const chosenIndex = await chooseOption("Language / 언어 (Enter = English)", ["English", "한국어"]);
   const language = chosenIndex === 1 ? "ko" : "en";
-  return { language, text: MESSAGES[language] };
+  return { language, messages: MESSAGES[language] };
 }
