@@ -1,7 +1,16 @@
 # Changelog
 
-**Current version:** 0.3.1  
-**Last updated:** 2026-10-17T15:09:50Z  
+**Current version:** 0.3.2  
+**Last updated:** 2026-10-18T06:50:40Z  
+
+---
+
+## [0.3.2] - 2026-10-18
+
+**PR:** #6  
+
+**🐛 Fixes**
+- guide when the version cannot be read, and give clearer names in the try scripts
 
 ---
 
